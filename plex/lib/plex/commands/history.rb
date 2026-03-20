@@ -13,6 +13,9 @@ module Plex
         c.flag :type,       desc: "Exact media type: movie, episode, track, clip, etc."
         c.flag "account-id", desc: "Filter to a specific Plex user account ID", type: Integer
         c.flag "device-id",  desc: "Filter to a specific device ID"
+        c.flag "imdb-id",    desc: "Filter to a specific IMDB ID (e.g. tt0133093)"
+        c.flag "tmdb-id",    desc: "Filter to a specific TMDB ID"
+        c.flag "tvdb-id",    desc: "Filter to a specific TVDB ID"
         c.flag :after,      desc: "Only records viewed after this Unix timestamp (seconds)", type: Integer
         c.flag :before,     desc: "Only records viewed before this Unix timestamp (seconds)", type: Integer
         c.flag :sort,       desc: "Sort: viewedAt:desc (default), viewedAt:asc, title:asc, title:desc",
@@ -53,6 +56,9 @@ module Plex
           items = items.select { |i| i["type"] == opts[:type] }             if opts[:type]
           items = items.select { |i| i["accountID"] == opts["account-id"] } if opts["account-id"]
           items = items.select { |i| i["deviceID"].to_s == opts["device-id"].to_s } if opts["device-id"]
+          items = items.select { |i| i["imdb_id"] == opts["imdb-id"] }      if opts["imdb-id"]
+          items = items.select { |i| i["tmdb_id"] == opts["tmdb-id"] }      if opts["tmdb-id"]
+          items = items.select { |i| i["tvdb_id"] == opts["tvdb-id"] }      if opts["tvdb-id"]
           items = items.select { |i| i["viewedAt"].to_i > opts[:after] }    if opts[:after]
           items = items.select { |i| i["viewedAt"].to_i < opts[:before] }   if opts[:before]
 
@@ -100,10 +106,12 @@ module Plex
           sort:                      "viewedAt:desc",
           "X-Plex-Container-Size":   batch_size,
           "X-Plex-Container-Start":  offset,
+          "includeGuids":            1,
         })
 
         mc    = res.dig("MediaContainer") || {}
         batch = (mc["Metadata"] || []).map do |m|
+          guids = Array(m["Guid"])
           {
             "historyKey"       => m["historyKey"],
             "ratingKey"        => m["ratingKey"],
@@ -115,6 +123,9 @@ module Plex
             "accountID"        => m["accountID"].to_i,
             "deviceID"         => m["deviceID"]&.to_s,
             "duration"         => m["duration"]&.to_i,
+            "imdb_id"          => Plex::GuidHelper.extract(guids, "imdb"),
+            "tmdb_id"          => Plex::GuidHelper.extract(guids, "tmdb"),
+            "tvdb_id"          => Plex::GuidHelper.extract(guids, "tvdb"),
           }
         end
 

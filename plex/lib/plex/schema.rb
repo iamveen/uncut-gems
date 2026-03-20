@@ -146,7 +146,10 @@ module Plex
         deviceID:         { type: "string" },
         duration:         { type: "integer", format: "milliseconds" },
         viewedAt:         { type: "integer", format: "unix_seconds" },
-        viewedAtISO:      { type: "string", format: "iso8601" }
+        viewedAtISO:      { type: "string", format: "iso8601" },
+        imdb_id:          { type: "string", note: "IMDb ID (tt-prefixed); may be null" },
+        tmdb_id:          { type: "string", note: "TMDB ID; may be null" },
+        tvdb_id:          { type: "string", note: "TVDB ID; may be null" }
       }
     },
     "playlists list" => {
