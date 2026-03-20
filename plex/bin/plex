@@ -8,7 +8,11 @@ include GLI::App
 
 program_desc "CLI wrapper around the Plex Media Server JSON API. " \
              "Outputs raw JSON/NDJSON to stdout; all other output goes to stderr. " \
-             "Use jq to reshape, filter, and select fields."
+             "Use jq to reshape, filter, and select fields.\n\n" \
+             "Environment variables:\n" \
+             "  PLEX_URL            - Plex server URL (default for --url)\n" \
+             "  PLEX_TOKEN          - Authentication token (default for --token)\n" \
+             "  PLEX_HISTORY_CACHE  - Custom history cache path (default: ~/.pi/plex-history.json)"
 
 version Plex::VERSION
 
