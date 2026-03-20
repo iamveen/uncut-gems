@@ -1,0 +1,115 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "gli"
+require "json"
+require "hdbits"
+
+include GLI::App
+
+program_desc "CLI wrapper around the HDBits private tracker JSON API. " \
+             "Outputs raw JSON/NDJSON to stdout; all other output goes to stderr. " \
+             "Use jq to reshape, filter, and select fields."
+
+version Hdbits::VERSION
+
+subcommand_option_handling :normal
+arguments :strict
+
+# ── Global flags ──────────────────────────────────────────────────────────────
+
+desc "HDBits username (overrides HDBITS_USERNAME env var)"
+flag :username
+
+desc "HDBits passkey from your announce URL (overrides HDBITS_PASSKEY env var)"
+flag :passkey
+
+desc "Log level: debug, info, warn, error, fatal (default: error)"
+flag :"log-level", default_value: "error"
+
+desc "Log destination: stderr, or a file path to append to (default: stderr)"
+flag :"log-output", default_value: "stderr"
+
+# Shared logger reference accessible to both pre and on_error closures.
+# Defaults to stderr/error so on_error always has something to write to.
+_logger = Hdbits::Logger.new(level: "error", output: $stderr)
+
+# ── Build logger and client before each command ───────────────────────────────
+
+pre do |global, _command, _options, _args|
+  log_output = if global[:"log-output"] == "stderr"
+                 $stderr
+               else
+                 begin
+                   File.open(global[:"log-output"], "a")
+                 rescue Errno::ENOENT, Errno::EACCES => e
+                   $stderr.puts "Error: cannot open log file '#{global[:"log-output"]}': #{e.message}"
+                   exit 1
+                 end
+               end
+
+  logger = Hdbits::Logger.new(level: global[:"log-level"], output: log_output)
+  _logger = logger  # keep shared reference current for on_error
+
+  username = global[:username] || ENV["HDBITS_USERNAME"]
+  passkey  = global[:passkey]  || ENV["HDBITS_PASSKEY"]
+
+  unless username && !username.strip.empty?
+    logger.fatal("HDBits username required. Set HDBITS_USERNAME or pass --username.")
+    exit 1
+  end
+
+  unless passkey && !passkey.strip.empty?
+    logger.fatal("HDBits passkey required. Set HDBITS_PASSKEY or pass --passkey.")
+    exit 1
+  end
+
+  global[:logger] = logger
+  global[:client] = Hdbits::Client.new(username: username, passkey: passkey, logger: logger)
+  true
+end
+
+# ── Error handler ─────────────────────────────────────────────────────────────
+
+on_error do |e|
+  _logger.error(e.message)
+  false
+end
+
+# ── schema command ─────────────────────────────────────────────────────────────
+
+desc "Show the output schema for a command. Run with no args to list all schemas."
+arg :command_name, :optional
+command :schema do |c|
+  c.action do |global, _options, args|
+    logger = global[:logger]
+    if args.empty?
+      summary = Hdbits::SCHEMAS.transform_values do |s|
+        "output=#{s[:output]}, fields=#{s[:record].keys.first(5).join(", ")}#{s[:record].size > 5 ? "…" : ""}"
+      end
+      puts JSON.pretty_generate(summary)
+    else
+      key    = args.join(" ")
+      schema = Hdbits::SCHEMAS[key]
+      if schema
+        puts JSON.pretty_generate(schema)
+      else
+        logger.error("Unknown schema '#{key}'. Available: #{Hdbits::SCHEMAS.keys.join(", ")}")
+        exit 1
+      end
+    end
+  end
+end
+
+# ── Register command groups ────────────────────────────────────────────────────
+
+Hdbits::Commands.register_test(self)
+Hdbits::Commands.register_user(self)
+Hdbits::Commands.register_tags(self)
+Hdbits::Commands.register_wishlist(self)
+Hdbits::Commands.register_torrent(self)
+Hdbits::Commands.register_top(self)
+Hdbits::Commands.register_subtitles(self)
+Hdbits::Commands.register_rss(self)
+
+exit run(ARGV)
