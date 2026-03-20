@@ -3,6 +3,24 @@
 This document provides AI agents with essential context for working on the Uncut Gems
 repository.
 
+## Required Reading
+
+**Before making any architectural decisions or adding features, read `DESIGN.md`.**
+
+The DESIGN.md file contains the complete design philosophy and patterns that all gems in
+this repository must follow.
+It covers output formats, filtering strategies, naming conventions, schema
+introspection, and more.
+
+**When to read DESIGN.md:**
+- Before adding new commands
+- Before changing output formats
+- Before creating new gems
+- When deciding between CLI flags vs.
+  jq filtering
+- When implementing envelope unwrapping
+- When adding schema definitions
+
 ## Project Overview
 
 **Uncut Gems** is a monorepo containing independent Ruby gems that provide composable
@@ -14,6 +32,7 @@ CLI wrappers around JSON APIs for media management tools and services.
 - **LLM-friendly**: Designed for automation, scripting, and agent use
 - **Schema introspection**: Built-in schema commands for discoverability
 - **Minimal dependencies**: Primarily Faraday (HTTP client) and GLI (CLI framework)
+- **Design consistency**: All gems follow the patterns in `DESIGN.md`
 
 ## Repository Structure
 
@@ -60,15 +79,17 @@ Each gem is **fully self-contained** with:
 
 ## Design Philosophy
 
-All gems follow the design principles documented in **`DESIGN.md`**, including:
+**All gems follow the design principles documented in `DESIGN.md`.**
+
+**Quick summary** (read DESIGN.md for complete details):
 - Output raw JSON/NDJSON to stdout
 - Use stderr for errors and logging
 - Unwrap API envelopes by default (`--raw` flag to preserve)
 - Support schema introspection via `schema` command
 - Consistent flag naming across gems
 - Defensive limits with `--limit` and `--all` flags
-
-**See `DESIGN.md` for complete design guidelines.**
+- Client-side filtering when API lacks support
+- Human-readable flag values over integer codes
 
 ## Architecture Overview
 
@@ -119,7 +140,7 @@ bundle exec bin/<gem-name> --help
 2. Define the command using GLI DSL
 3. Implement the action block
 4. Test with `bundle exec bin/<gem-name> <command>`
-5. Update the gem's README.md with usage examples
+5. Update the gem’s README.md with usage examples
 6. **Increment version** in `lib/<gem>/<gem>.rb` (typically MINOR version for new
    commands)
 7. Add an entry to CHANGELOG.md under the new version
@@ -147,7 +168,7 @@ bundle exec bin/<gem-name> --help
 
 #### Version Number Location
 
-Each gem's version is defined as a constant in its main module file:
+Each gem’s version is defined as a constant in its main module file:
 - **Location**: `lib/<gem>/<gem>.rb`
 - **Format**: `VERSION = "MAJOR.MINOR.PATCH"`
 - **Example**: `module Plex; VERSION = "1.2.3"; end`
@@ -314,7 +335,7 @@ These can be overridden with CLI flags (`--url`, `--token`, etc.).
 ### Versioning
 
 - **Each gem has its own independent version** (never increment versions across gems)
-- **Always increment version before committing** (see "Versioning and Releases" section)
+- **Always increment version before committing** (see “Versioning and Releases” section)
 - Follow semantic versioning (MAJOR.MINOR.PATCH)
 - Update both `lib/<gem>/<gem>.rb` and `CHANGELOG.md` together
 - Version format: `VERSION = "1.2.3"` in `lib/<gem>/<gem>.rb`
@@ -389,11 +410,13 @@ All gems in this repository follow the design principles documented in **`DESIGN
 - Consistent flag naming across gems
 - Client-side filtering when API lacks support
 
-**Read `DESIGN.md` before:**
-- Adding new commands
-- Changing output formats
-- Creating new gems
-- Making architectural decisions
+**Action required: Read `DESIGN.md` before:**
+- Adding new commands (to understand output format rules)
+- Changing output formats (to follow NDJSON vs JSON guidelines)
+- Creating new gems (to use the standard structure)
+- Making architectural decisions (to maintain consistency)
+- Implementing filtering (to decide flags vs jq)
+- Adding schema definitions (to follow the schema format)
 
 ## Documentation Standards
 
@@ -416,18 +439,18 @@ Must include:
 ## Common Pitfalls
 
 1. **Not following DESIGN.md**: Read it before making architectural decisions
-2. **Mixing output formats**: Don't output both JSON and NDJSON in the same command
+2. **Mixing output formats**: Don’t output both JSON and NDJSON in the same command
 3. **Writing to stdout instead of stderr**: Logs and errors go to stderr
 4. **Not redacting secrets**: Always redact tokens/passkeys in debug logs
 5. **Ignoring envelope unwrapping**: Users expect clean data, not wrapped responses
 6. **Inconsistent flag naming**: Use standard flag names documented in DESIGN.md
 7. **Forgetting schema updates**: When adding commands, update schema definitions
-8. **Breaking gem independence**: Don't add cross-gem dependencies
+8. **Breaking gem independence**: Don’t add cross-gem dependencies
 9. **Forgetting to version bump**: Always increment version before committing
 
 ## Getting Help
 
-- Check the gem's README.md for usage examples
+- Check the gem’s README.md for usage examples
 - Use `--help` flag on any command
 - Use `--verbose` to debug HTTP requests
 - Check API documentation for the service
