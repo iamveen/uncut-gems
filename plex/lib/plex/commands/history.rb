@@ -1,7 +1,7 @@
 require "json"
 require "time"
 
-HISTORY_CACHE_PATH = ENV["PLEX_HISTORY_CACHE"] || File.join(Dir.home, ".pi", "plex-history.json")
+HISTORY_CACHE_PATH = ENV["PLEX_HISTORY_CACHE"] || File.join(Dir.home, ".cache", "plex", "history.json")
 
 module Plex
   module Commands
