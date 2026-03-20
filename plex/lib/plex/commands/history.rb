@@ -1,7 +1,7 @@
 require "json"
 require "time"
 
-HISTORY_CACHE_PATH = File.join(Dir.home, ".pi", "plex-history.json")
+HISTORY_CACHE_PATH = ENV["PLEX_HISTORY_CACHE"] || File.join(Dir.home, ".pi", "plex-history.json")
 
 module Plex
   module Commands
@@ -90,7 +90,7 @@ module Plex
         ? existing["items"].map { |i| i["viewedAt"].to_i }.max
         : 0
 
-      batch_size = 1000
+      batch_size = 100
       fetched    = []
       offset     = 0
       exhausted  = false
