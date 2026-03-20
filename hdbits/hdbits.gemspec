@@ -5,19 +5,19 @@ require_relative "lib/hdbits"
 Gem::Specification.new do |spec|
   spec.name          = "hdbits"
   spec.version       = Hdbits::VERSION
-  spec.authors       = ["Your Name"]
-  spec.email         = ["your.email@example.com"]
+  spec.authors       = ["iamveen"]
+  spec.email         = ["iamveen@users.noreply.github.com"]
 
   spec.summary       = "CLI wrapper around the HDBits private tracker JSON API"
   spec.description   = "A command-line tool for interacting with the HDBits private tracker API. " \
                        "Outputs raw JSON/NDJSON to stdout for easy piping to jq and other tools."
-  spec.homepage      = "https://github.com/yourusername/hdbits"
+  spec.homepage      = "https://github.com/iamveen/uncut-gems"
   spec.license       = "MIT"
   spec.required_ruby_version = ">= 3.0.0"
 
   spec.metadata["homepage_uri"]    = spec.homepage
-  spec.metadata["source_code_uri"] = spec.homepage
-  spec.metadata["changelog_uri"]   = "#{spec.homepage}/blob/main/CHANGELOG.md"
+  spec.metadata["source_code_uri"] = "https://github.com/iamveen/uncut-gems/tree/main/hdbits"
+  spec.metadata["changelog_uri"]   = "https://github.com/iamveen/uncut-gems/blob/main/hdbits/CHANGELOG.md"
 
   # Specify which files should be added to the gem when it is released.
   spec.files = Dir.chdir(__dir__) do

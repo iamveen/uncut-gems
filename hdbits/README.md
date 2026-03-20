@@ -9,7 +9,7 @@ Outputs raw JSON/NDJSON to stdout for easy piping to `jq` and other Unix tools.
 Add to your Gemfile (requires Bundler 2.3+):
 
 ```ruby
-gem "hdbits", github: "yourusername/uncut-gems", subdir: "hdbits"
+gem "hdbits", github: "iamveen/uncut-gems", subdir: "hdbits"
 ```
 
 Then run:
@@ -21,7 +21,7 @@ bundle install
 ### From Source
 
 ```bash
-git clone https://github.com/yourusername/uncut-gems.git
+git clone https://github.com/iamveen/uncut-gems.git
 cd uncut-gems/hdbits
 bundle install
 bundle exec bin/hdbits --help

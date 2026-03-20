@@ -1,0 +1,93 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "plex"
+require "gli"
+
+include GLI::App
+
+program_desc "CLI wrapper around the Plex Media Server JSON API. " \
+             "Outputs raw JSON/NDJSON to stdout; all other output goes to stderr. " \
+             "Use jq to reshape, filter, and select fields."
+
+version Plex::VERSION
+
+subcommand_option_handling :normal
+arguments :strict
+
+# ── Global flags ──────────────────────────────────────────────────────────────
+
+desc "Plex server URL (overrides PLEX_URL env var), e.g. http://192.168.1.10:32400"
+flag :url
+
+desc "Plex authentication token (overrides PLEX_TOKEN env var)"
+flag :token
+
+# ── Build the client before each command ──────────────────────────────────────
+
+pre do |global, _command, _options, _args|
+  url   = global[:url]   || ENV["PLEX_URL"]
+  token = global[:token] || ENV["PLEX_TOKEN"]
+
+  unless url && !url.strip.empty?
+    $stderr.puts "Error: Plex server URL required. Set PLEX_URL or pass --url."
+    exit 1
+  end
+  unless token && !token.strip.empty?
+    $stderr.puts "Error: Plex token required. Set PLEX_TOKEN or pass --token."
+    exit 1
+  end
+
+  global[:client] = Plex::Client.new(url: url, token: token)
+  true
+end
+
+# ── Error handler ─────────────────────────────────────────────────────────────
+
+on_error do |e|
+  $stderr.puts "Error: #{e.message}"
+  false
+end
+
+# ── schema command ────────────────────────────────────────────────────────────
+
+desc "Show the output schema for a command. Run with no args to list all schemas."
+arg :command_name, :optional
+command :schema do |c|
+  c.action do |_global, _options, args|
+    if args.empty?
+      # List all schema keys with a one-line summary
+      summary = Plex::SCHEMAS.transform_values do |s|
+        "output=#{s[:output]}, fields=#{s[:record].keys.first(5).join(", ")}#{s[:record].size > 5 ? "…" : ""}"
+      end
+      puts JSON.pretty_generate(summary)
+    else
+      key = args.join(" ")
+      schema = Plex::SCHEMAS[key]
+      if schema
+        puts JSON.pretty_generate(schema)
+      else
+        $stderr.puts "Unknown command '#{key}'. Available schemas:"
+        Plex::SCHEMAS.each_key { |k| $stderr.puts "  #{k}" }
+        exit 1
+      end
+    end
+  end
+end
+
+# ── Register command groups ───────────────────────────────────────────────────
+
+Plex::Commands.register_server(self)
+Plex::Commands.register_library(self)
+Plex::Commands.register_metadata(self)
+Plex::Commands.register_search(self)
+Plex::Commands.register_sessions(self)
+Plex::Commands.register_history(self)
+Plex::Commands.register_playlists(self)
+Plex::Commands.register_collections(self)
+Plex::Commands.register_hubs(self)
+Plex::Commands.register_scrobble(self)
+Plex::Commands.register_dvr(self)
+Plex::Commands.register_accounts(self)
+
+exit run(ARGV)
