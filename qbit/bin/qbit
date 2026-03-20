@@ -1,0 +1,81 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "qbit"
+require "gli"
+
+include GLI::App
+
+program_desc "CLI wrapper around the qBittorrent Web API (v2). " \
+             "Outputs raw JSON/NDJSON to stdout; all other output goes to stderr. " \
+             "Use jq to reshape, filter, and select fields."
+
+version Qbit::VERSION
+
+subcommand_option_handling :normal
+arguments :strict
+
+# ── Global flags ──────────────────────────────────────────────────────────────
+
+desc "qBittorrent server URL (overrides QBIT_URL env var)"
+flag :url
+
+desc "qBittorrent username (overrides QBIT_USERNAME env var)"
+flag :username
+
+desc "qBittorrent password (overrides QBIT_PASSWORD env var)"
+flag :password
+
+# ── Build the client before each command ──────────────────────────────────────
+
+pre do |global, _command, _options, _args|
+  url      = global[:url]      || ENV["QBIT_URL"]      || "http://localhost:8080"
+  username = global[:username] || ENV["QBIT_USERNAME"] || "admin"
+  password = global[:password] || ENV["QBIT_PASSWORD"] || "adminadmin"
+
+  global[:client] = Qbit::Client.new(url: url, username: username, password: password)
+  true
+end
+
+# ── Error handler ─────────────────────────────────────────────────────────────
+
+on_error do |e|
+  $stderr.puts "Error: #{e.message}"
+  false
+end
+
+# ── schema command ─────────────────────────────────────────────────────────────
+
+desc "Show the output schema for a command. Run with no args to list all schemas."
+arg :command_name, :optional
+command :schema do |c|
+  c.action do |_global, _options, args|
+    if args.empty?
+      summary = Qbit::SCHEMAS.transform_values do |s|
+        fields = s[:record].is_a?(Hash) ? s[:record].keys.first(5).map(&:to_s) : [s[:record].to_s]
+        "output=#{s[:output]}, fields=#{fields.join(", ")}#{s[:record].is_a?(Hash) && s[:record].size > 5 ? "…" : ""}"
+      end
+      puts JSON.pretty_generate(summary)
+    else
+      key    = args.join(" ")
+      schema = Qbit::SCHEMAS[key]
+      if schema
+        puts JSON.pretty_generate(schema)
+      else
+        $stderr.puts "Unknown command '#{key}'. Available schemas:"
+        Qbit::SCHEMAS.each_key { |k| $stderr.puts "  #{k}" }
+        exit 1
+      end
+    end
+  end
+end
+
+# ── Register command groups ────────────────────────────────────────────────────
+
+Qbit::Commands.register_torrent(self)
+Qbit::Commands.register_category(self)
+Qbit::Commands.register_tag(self)
+Qbit::Commands.register_transfer(self)
+Qbit::Commands.register_app(self)
+
+exit run(ARGV)
