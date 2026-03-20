@@ -9,6 +9,7 @@ end
 
 require_relative "plex/client"
 require_relative "plex/output"
+require_relative "plex/guid_helper"
 require_relative "plex/schema"
 require_relative "plex/commands/server"
 require_relative "plex/commands/library"

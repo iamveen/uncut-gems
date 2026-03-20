@@ -26,6 +26,7 @@ module Plex
           c.flag :filter, desc: "Filter as KEY=VALUE (repeatable, e.g. --filter genre=Action --filter 'year>>=2000')",
                           multiple: true
           c.switch :all, desc: "Remove the default 100-item limit", negatable: false
+          c.switch "include-guids", desc: "Include imdb_id, tmdb_id, tvdb_id on each record", negatable: false
           c.switch :raw, desc: "Return full API envelope", negatable: false
           c.action do |g, opts, _|
             params = {
@@ -34,12 +35,36 @@ module Plex
               "X-Plex-Container-Size":     opts[:all] ? nil : opts[:limit],
               "X-Plex-Container-Start":    opts[:offset],
             }
+            
+            # Add includeGuids parameter if flag is set
+            params["includeGuids"] = 1 if opts["include-guids"]
+            
             opts[:filter].each do |pair|
               k, v = pair.split("=", 2)
               params[k] = v
             end
+            
             body = g[:client].get("/library/sections/#{opts["section-key"]}/all", params.compact)
-            Plex::Output.emit(body, raw: opts[:raw])
+            
+            # Process GUIDs if requested and not raw output
+            if opts["include-guids"] && !opts[:raw]
+              data, envelope = Plex::Output.unwrap(body)
+              
+              if data.is_a?(Array)
+                data = data.map do |item|
+                  guids = Array(item["Guid"])
+                  item["imdb_id"] = Plex::GuidHelper.extract(guids, "imdb")
+                  item["tmdb_id"] = Plex::GuidHelper.extract(guids, "tmdb")
+                  item["tvdb_id"] = Plex::GuidHelper.extract(guids, "tvdb")
+                  item.delete("Guid")  # Remove nested array to keep output flat
+                  item
+                end
+              end
+              
+              Plex::Output.ndjson(data)
+            else
+              Plex::Output.emit(body, raw: opts[:raw])
+            end
           end
         end
 

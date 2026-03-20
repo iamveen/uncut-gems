@@ -66,7 +66,10 @@ module Plex
         viewCount:  { type: "integer" },
         duration:   { type: "integer", format: "milliseconds" },
         addedAt:    { type: "integer", format: "unix_seconds" },
-        thumb:      { type: "string" }
+        thumb:      { type: "string" },
+        imdb_id:    { type: "string", note: "IMDb ID (tt-prefixed); only present with --include-guids" },
+        tmdb_id:    { type: "string", note: "TMDB ID; only present with --include-guids" },
+        tvdb_id:    { type: "string", note: "TVDB ID; only present with --include-guids" }
       }
     },
     "metadata get" => {
