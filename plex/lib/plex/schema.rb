@@ -152,6 +152,38 @@ module Plex
         tvdb_id:          { type: "string", note: "TVDB ID; may be null" }
       }
     },
+    "movie exists" => {
+      output: "json",
+      record: {
+        exists:     { type: "boolean" },
+        imdb_id:    { type: "string", format: "tt-prefixed" },
+        title:      { type: "string", note: "null if not found" },
+        year:       { type: "integer", note: "null if not found" },
+        ratingKey:  { type: "string", note: "null if not found" }
+      }
+    },
+    "movie watched" => {
+      output: "json",
+      record: {
+        watched:         { type: "boolean" },
+        exists:          { type: "boolean" },
+        imdb_id:         { type: "string", format: "tt-prefixed" },
+        title:           { type: "string", note: "null if not found" },
+        viewCount:       { type: "integer", note: "number of times watched" },
+        lastViewedAt:    { type: "integer", format: "unix_seconds" },
+        lastViewedAtISO: { type: "string", format: "iso8601" }
+      }
+    },
+    "movie missing" => {
+      output: "ndjson",
+      record: {
+        imdb_id:   { type: "string", format: "tt-prefixed" },
+        exists:    { type: "boolean", note: "false for missing; true with --include-found" },
+        title:     { type: "string", note: "null if not found" },
+        year:      { type: "integer", note: "null if not found" },
+        ratingKey: { type: "string", note: "null if not found" }
+      }
+    },
     "playlists list" => {
       output: "ndjson",
       record: {
