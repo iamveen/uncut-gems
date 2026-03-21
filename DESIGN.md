@@ -412,6 +412,67 @@ This keeps the executable clean and makes commands independently testable.
 
 * * *
 
+## Common Pitfalls
+
+### Faraday Base URL and Path Handling
+
+**Problem:** Faraday treats paths starting with `/` as absolute from the domain root,
+not relative to the base URL.
+
+```ruby
+# WRONG - requests go to https://api.example.com/endpoint (missing /v3)
+BASE_URL = "https://api.example.com/v3"
+@conn = Faraday.new(url: BASE_URL)
+@conn.get("/endpoint")  # Goes to https://api.example.com/endpoint ❌
+
+# RIGHT - use trailing slash on base URL and no leading slash on paths
+BASE_URL = "https://api.example.com/v3/"
+@conn = Faraday.new(url: BASE_URL)
+@conn.get("endpoint")  # Goes to https://api.example.com/v3/endpoint ✅
+```
+
+**Solution:**
+1. Add trailing slash to `BASE_URL`
+2. Use relative paths (no leading `/`) in all `get`, `post`, `delete` calls
+
+This was discovered in TMDB gem where all requests were returning 404s because paths
+like `/search/movie` were being resolved to `https://api.themoviedb.org/search/movie`
+instead of `https://api.themoviedb.org/3/search/movie`.
+
+### GLI Positional Arguments
+
+**Problem:** GLI’s positional argument handling can be finicky and inconsistent with
+flag-based patterns used throughout the CLI.
+
+```ruby
+# AVOID - positional args are harder to document and less discoverable
+c.arg :media_type
+c.arg :time_window
+# Usage: tmdb trending movie week
+
+# PREFER - flags with defaults for better discoverability
+c.flag "media-type", desc: "Media type (all, movie, tv, person)", default_value: "all"
+c.flag "time-window", desc: "Time window (day, week)", default_value: "week"
+# Usage: tmdb trending --media-type=movie --time-window=week
+```
+
+**Why flags are better:**
+- Self-documenting (shows up in `--help`)
+- Can have sensible defaults
+- More flexible ordering
+- Consistent with other commands
+- Better for LLM agents (can see available options)
+
+**When to use positional arguments:**
+- Single required argument that’s obvious from context (e.g., `movie delete <id>`)
+- Optional action arguments where the command is truly polymorphic
+
+This was discovered in TMDB gem where `trending <media_type> <time_window>` was
+confusing and didn’t show up well in help text.
+Converting to flags made it much more usable.
+
+* * *
+
 ## Ruby Gem Structure
 
 ### Directory Layout
