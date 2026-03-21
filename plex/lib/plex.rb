@@ -4,7 +4,7 @@ require "faraday"
 require "json"
 
 module Plex
-  VERSION = "1.0.0"
+  VERSION = "1.0.1"
 end
 
 require_relative "plex/client"

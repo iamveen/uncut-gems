@@ -25,9 +25,10 @@ module Plex
                 year: result&.dig("year"),
                 ratingKey: result&.dig("ratingKey")
               })
-              exit 0
+              # Return normally for success
             else
-              exit result.nil? ? 1 : 0
+              # Use Process.exit to bypass GLI's exit handling
+              Process.exit(result.nil? ? 1 : 0)
             end
           end
         end
@@ -44,7 +45,7 @@ module Plex
 
             unless item
               $stderr.puts "Error: Movie with IMDB ID #{imdb_id} not found in library"
-              exit 1
+              Process.exit(1)
             end
 
             # Now fetch full metadata using ratingKey
@@ -69,17 +70,18 @@ module Plex
             unless item
               if opts[:json]
                 puts JSON.generate({ watched: false, exists: false, imdb_id: imdb_id })
-                exit 0
+                # Return normally for success
+                return
               else
                 $stderr.puts "Error: Movie with IMDB ID #{imdb_id} not found in library"
-                exit 1
+                Process.exit(1)
               end
             end
 
             # Load history cache
             unless File.exist?(HISTORY_CACHE_PATH)
               $stderr.puts "Error: History cache not found. Run 'plex history' first."
-              exit 1
+              Process.exit(1)
             end
 
             cache = JSON.parse(File.read(HISTORY_CACHE_PATH))
@@ -109,9 +111,10 @@ module Plex
                 lastViewedAt: latest&.dig("viewedAt"),
                 lastViewedAtISO: latest ? Time.at(latest["viewedAt"]).utc.iso8601 : nil
               })
-              exit 0
+              # Return normally for success
             else
-              exit watched_records.empty? ? 1 : 0
+              # Use Process.exit to bypass GLI's exit handling
+              Process.exit(watched_records.empty? ? 1 : 0)
             end
           end
         end
@@ -178,7 +181,7 @@ module Plex
 
       if movie_sections.empty?
         $stderr.puts "Error: No movie sections found"
-        exit 1
+        Process.exit(1)
       end
 
       @library_cache = {}
@@ -230,7 +233,7 @@ module Plex
         $stderr.puts "Error: Account '#{account_name}' not found"
         $stderr.puts "Available accounts:"
         accounts.each { |a| $stderr.puts "  - #{a["name"]}" }
-        exit 1
+        Process.exit(1)
       end
 
       account["id"].to_i

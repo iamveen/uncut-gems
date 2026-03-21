@@ -7,6 +7,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased][unreleased]
 
+## [1.0.1] - 2026-03-21
+
+### Fixed
+
+- Fixed exit code handling for `movie exists` and `movie watched` commands - they now correctly return exit code 0 when a movie exists/is watched and exit code 1 when not found/not watched
+- Fixed error handler in bin/plex to properly propagate SystemExit exceptions instead of treating them as errors
+
 ## [1.0.0] - 2026-03-20
 
 ### Added
@@ -36,5 +43,6 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - MIT License
 - Gemspec configured for monorepo distribution via GitHub
 
-[unreleased]: https://github.com/iamveen/uncut-gems/compare/v1.0.0...HEAD
+[unreleased]: https://github.com/iamveen/uncut-gems/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/iamveen/uncut-gems/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/iamveen/uncut-gems/releases/tag/v1.0.0

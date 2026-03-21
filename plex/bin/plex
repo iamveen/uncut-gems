@@ -49,6 +49,9 @@ end
 # ── Error handler ─────────────────────────────────────────────────────────────
 
 on_error do |e|
+  # Don't intercept SystemExit - let it propagate naturally
+  raise e if e.is_a?(SystemExit)
+  
   $stderr.puts "Error: #{e.message}"
   false
 end
