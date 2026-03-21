@@ -471,6 +471,94 @@ This was discovered in TMDB gem where `trending <media_type> <time_window>` was
 confusing and didn’t show up well in help text.
 Converting to flags made it much more usable.
 
+### GLI Exit Code Handling
+
+**Problem:** GLI’s `on_error` handler catches **all** exceptions, including
+`SystemExit`, which breaks exit code semantics for commands that need to signal
+success/failure via exit codes.
+
+```ruby
+# WRONG - on_error catches SystemExit and forces exit code 1
+on_error do |e|
+  $stderr.puts "Error: #{e.message}"
+  false  # GLI exits with code 1
+end
+
+c.action do |g, opts, _|
+  result = find_movie(id)
+  exit result.nil? ? 1 : 0  # Gets caught by on_error! Always exits 1
+end
+```
+
+When you run `exit 0`, GLI’s error handler catches the `SystemExit` exception, prints
+“Error: exit” to stderr, and returns `false`, forcing the exit code to 1.
+
+**Solution:** Re-raise `SystemExit` exceptions in the error handler:
+
+```ruby
+# RIGHT - let SystemExit propagate naturally
+on_error do |e|
+  # Don't intercept SystemExit - let it propagate naturally
+  raise e if e.is_a?(SystemExit)
+
+  $stderr.puts "Error: #{e.message}"
+  false
+end
+
+c.action do |g, opts, _|
+  result = find_movie(id)
+  Process.exit(result.nil? ? 1 : 0)  # Now works correctly
+end
+```
+
+**Why this matters:**
+
+Exit codes are the primary way shell scripts and LLM agents detect command success:
+
+```bash
+# Shell scripts rely on exit codes
+if plex movie exists --imdb tt0111161; then
+  echo "Movie found!"
+else
+  echo "Movie not found"
+fi
+
+# LLM agents check exit codes for automation
+plex movie exists --imdb tt0111161 && plex movie get --imdb tt0111161 | jq
+```
+
+Without correct exit code handling, these patterns break - commands always appear to
+fail even when they succeed.
+
+**When to use exit codes:**
+
+- `exists` commands (0 = exists, 1 = not found)
+- `check` commands (0 = pass, 1 = fail)
+- `validate` commands (0 = valid, 1 = invalid)
+- Any command where the boolean result is the primary output
+
+For these commands, prefer exit codes over JSON output as the default behavior, but
+provide a `--json` flag for structured output when needed:
+
+```ruby
+c.switch :json, desc: "Output JSON instead of exit code", negatable: false
+
+c.action do |g, opts, _|
+  result = check_something()
+
+  if opts[:json]
+    puts JSON.generate({status: result})
+    # Return normally for success (exit code 0)
+  else
+    # Use exit code as the result
+    Process.exit(result ? 0 : 1)
+  end
+end
+```
+
+This pattern was discovered when `plex movie exists` was always returning exit code 1
+and showing “Error: exit” even for movies that existed in the library.
+
 * * *
 
 ## Ruby Gem Structure
@@ -728,7 +816,7 @@ rm ./gem-name-*.gem
 | Errors | stderr + non-zero exit code |
 | Naming | Consistent flag names across all gems |
 | Documentation | GLI `desc` strings = self-documenting |
-| Output schemas | `gem-name schema <command>` — discoverable at runtime |
+| Output schemas | `gem-name schema <command>` - discoverable at runtime |
 | GLI argument order | Flags before positional arguments |
 
 * * *
