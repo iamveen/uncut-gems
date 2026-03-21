@@ -14,6 +14,7 @@ command-line interfaces and API client libraries:
 | [qbit](qbit/) | CLI wrapper for the qBittorrent Web API |
 | [radarr](radarr/) | CLI wrapper for the Radarr API |
 | [sonarr](sonarr/) | CLI wrapper for the Sonarr API |
+| [tmdb](tmdb/) | CLI wrapper for The Movie Database (TMDB) API |
 
 Each gem is designed with composability in mind:
 - Outputs JSON/NDJSON for easy piping to `jq` and other Unix tools

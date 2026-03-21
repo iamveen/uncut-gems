@@ -1,0 +1,85 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "tmdb"
+require "gli"
+
+include GLI::App
+
+program_desc "CLI wrapper around The Movie Database (TMDB) API. " \
+             "Outputs raw JSON/NDJSON to stdout; all other output goes to stderr. " \
+             "Use jq to reshape, filter, and select fields.\n\n" \
+             "Environment variables:\n" \
+             "  TMDB_API_KEY  - TMDB API key (default for --api-key)"
+
+version TMDB::VERSION
+
+subcommand_option_handling :normal
+arguments :strict
+
+# ── Global flags ──────────────────────────────────────────────────────────────
+
+desc "TMDB API key (overrides TMDB_API_KEY env var)"
+flag "api-key"
+
+# ── Build the client before each command ──────────────────────────────────────
+
+pre do |global, command, _options, _args|
+  # Skip API key requirement for schema command
+  next true if command.name == :schema
+
+  api_key = global["api-key"] || ENV["TMDB_API_KEY"]
+
+  unless api_key && !api_key.strip.empty?
+    $stderr.puts "Error: TMDB API key required. Set TMDB_API_KEY or pass --api-key."
+    $stderr.puts "Get your API key at: https://www.themoviedb.org/settings/api"
+    exit 1
+  end
+
+  global[:client] = TMDB::Client.new(api_key: api_key)
+  true
+end
+
+# ── Error handler ─────────────────────────────────────────────────────────────
+
+on_error do |e|
+  $stderr.puts "Error: #{e.message}"
+  false
+end
+
+# ── schema command ────────────────────────────────────────────────────────────
+
+desc "Show the output schema for a command. Run with no args to list all schemas."
+arg :command_name, :optional
+command :schema do |c|
+  c.action do |_global, _options, args|
+    if args.empty?
+      # List all schema keys with a one-line summary
+      summary = TMDB::SCHEMAS.transform_values do |s|
+        "output=#{s[:output]}, fields=#{s[:record].keys.first(5).join(", ")}#{s[:record].size > 5 ? "…" : ""}"
+      end
+      puts JSON.pretty_generate(summary)
+    else
+      key = args.join(" ")
+      schema = TMDB::SCHEMAS[key]
+      if schema
+        puts JSON.pretty_generate(schema)
+      else
+        $stderr.puts "Unknown command '#{key}'. Available schemas:"
+        TMDB::SCHEMAS.each_key { |k| $stderr.puts "  #{k}" }
+        exit 1
+      end
+    end
+  end
+end
+
+# ── Register command groups ───────────────────────────────────────────────────
+
+TMDB::Commands.register_search(self)
+TMDB::Commands.register_movie(self)
+TMDB::Commands.register_tv(self)
+TMDB::Commands.register_person(self)
+TMDB::Commands.register_discover(self)
+TMDB::Commands.register_trending(self)
+
+exit run(ARGV)
