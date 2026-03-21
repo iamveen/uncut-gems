@@ -3,7 +3,7 @@ require "json"
 
 module TMDB
   class Client
-    BASE_URL = "https://api.themoviedb.org/3"
+    BASE_URL = "https://api.themoviedb.org/3/"
 
     def initialize(api_key:)
       @api_key = api_key

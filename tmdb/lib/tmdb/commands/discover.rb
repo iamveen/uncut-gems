@@ -49,7 +49,7 @@ module TMDB
               include_adult: opts["include-adult"],
               include_video: opts["include-video"]
             }
-            body = g[:client].get("/discover/movie", params)
+            body = g[:client].get("discover/movie", params)
             TMDB::Output.emit(body, raw: opts[:raw])
           end
         end
@@ -90,7 +90,7 @@ module TMDB
               first_air_date_year: opts["first-air-date-year"],
               include_adult: opts["include-adult"]
             }
-            body = g[:client].get("/discover/tv", params)
+            body = g[:client].get("discover/tv", params)
             TMDB::Output.emit(body, raw: opts[:raw])
           end
         end

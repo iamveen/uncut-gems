@@ -16,7 +16,7 @@ module TMDB
               language: opts[:language],
               append_to_response: opts["append-to-response"]
             }
-            body = g[:client].get("/person/#{opts[:id]}", params)
+            body = g[:client].get("person/#{opts[:id]}", params)
             TMDB::Output.emit(body, raw: opts[:raw])
           end
         end
@@ -30,7 +30,7 @@ module TMDB
 
           credits.action do |g, opts, _|
             params = { language: opts[:language] }
-            body = g[:client].get("/person/#{opts[:id]}/movie_credits", params)
+            body = g[:client].get("person/#{opts[:id]}/movie_credits", params)
             TMDB::Output.emit(body, raw: opts[:raw])
           end
         end
@@ -44,7 +44,7 @@ module TMDB
 
           credits.action do |g, opts, _|
             params = { language: opts[:language] }
-            body = g[:client].get("/person/#{opts[:id]}/tv_credits", params)
+            body = g[:client].get("person/#{opts[:id]}/tv_credits", params)
             TMDB::Output.emit(body, raw: opts[:raw])
           end
         end
@@ -58,7 +58,7 @@ module TMDB
 
           credits.action do |g, opts, _|
             params = { language: opts[:language] }
-            body = g[:client].get("/person/#{opts[:id]}/combined_credits", params)
+            body = g[:client].get("person/#{opts[:id]}/combined_credits", params)
             TMDB::Output.emit(body, raw: opts[:raw])
           end
         end
@@ -70,7 +70,7 @@ module TMDB
           images.switch :raw, desc: "Return full API envelope", negatable: false
 
           images.action do |g, opts, _|
-            body = g[:client].get("/person/#{opts[:id]}/images", {})
+            body = g[:client].get("person/#{opts[:id]}/images", {})
             TMDB::Output.emit(body, raw: opts[:raw])
           end
         end
@@ -87,7 +87,7 @@ module TMDB
               page: opts[:page],
               language: opts[:language]
             }
-            body = g[:client].get("/person/popular", params)
+            body = g[:client].get("person/popular", params)
             TMDB::Output.emit(body, raw: opts[:raw])
           end
         end

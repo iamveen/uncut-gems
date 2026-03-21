@@ -21,7 +21,7 @@ module TMDB
               language: opts[:language],
               include_adult: opts["include-adult"]
             }
-            body = g[:client].get("/search/movie", params)
+            body = g[:client].get("search/movie", params)
             TMDB::Output.emit(body, raw: opts[:raw])
           end
         end
@@ -44,7 +44,7 @@ module TMDB
               language: opts[:language],
               include_adult: opts["include-adult"]
             }
-            body = g[:client].get("/search/tv", params)
+            body = g[:client].get("search/tv", params)
             TMDB::Output.emit(body, raw: opts[:raw])
           end
         end
@@ -65,7 +65,7 @@ module TMDB
               language: opts[:language],
               include_adult: opts["include-adult"]
             }
-            body = g[:client].get("/search/person", params)
+            body = g[:client].get("search/person", params)
             TMDB::Output.emit(body, raw: opts[:raw])
           end
         end
@@ -86,7 +86,7 @@ module TMDB
               language: opts[:language],
               include_adult: opts["include-adult"]
             }
-            body = g[:client].get("/search/multi", params)
+            body = g[:client].get("search/multi", params)
             TMDB::Output.emit(body, raw: opts[:raw])
           end
         end

@@ -16,7 +16,7 @@ module TMDB
               language: opts[:language],
               append_to_response: opts["append-to-response"]
             }
-            body = g[:client].get("/tv/#{opts[:id]}", params)
+            body = g[:client].get("tv/#{opts[:id]}", params)
             TMDB::Output.emit(body, raw: opts[:raw])
           end
         end
@@ -30,7 +30,7 @@ module TMDB
 
           credits.action do |g, opts, _|
             params = { language: opts[:language] }
-            body = g[:client].get("/tv/#{opts[:id]}/credits", params)
+            body = g[:client].get("tv/#{opts[:id]}/credits", params)
             TMDB::Output.emit(body, raw: opts[:raw])
           end
         end
@@ -44,7 +44,7 @@ module TMDB
 
           images.action do |g, opts, _|
             params = { language: opts[:language] }
-            body = g[:client].get("/tv/#{opts[:id]}/images", params)
+            body = g[:client].get("tv/#{opts[:id]}/images", params)
             TMDB::Output.emit(body, raw: opts[:raw])
           end
         end
@@ -58,7 +58,7 @@ module TMDB
 
           videos.action do |g, opts, _|
             params = { language: opts[:language] }
-            body = g[:client].get("/tv/#{opts[:id]}/videos", params)
+            body = g[:client].get("tv/#{opts[:id]}/videos", params)
             TMDB::Output.emit(body, raw: opts[:raw])
           end
         end
@@ -73,7 +73,7 @@ module TMDB
 
           season.action do |g, opts, _|
             params = { language: opts[:language] }
-            body = g[:client].get("/tv/#{opts[:id]}/season/#{opts[:season]}", params)
+            body = g[:client].get("tv/#{opts[:id]}/season/#{opts[:season]}", params)
             TMDB::Output.emit(body, raw: opts[:raw])
           end
         end
@@ -108,7 +108,7 @@ module TMDB
               page: opts[:page],
               language: opts[:language]
             }
-            body = g[:client].get("/tv/#{opts[:id]}/recommendations", params)
+            body = g[:client].get("tv/#{opts[:id]}/recommendations", params)
             TMDB::Output.emit(body, raw: opts[:raw])
           end
         end
@@ -126,7 +126,7 @@ module TMDB
               page: opts[:page],
               language: opts[:language]
             }
-            body = g[:client].get("/tv/#{opts[:id]}/similar", params)
+            body = g[:client].get("tv/#{opts[:id]}/similar", params)
             TMDB::Output.emit(body, raw: opts[:raw])
           end
         end
@@ -143,7 +143,7 @@ module TMDB
               page: opts[:page],
               language: opts[:language]
             }
-            body = g[:client].get("/tv/popular", params)
+            body = g[:client].get("tv/popular", params)
             TMDB::Output.emit(body, raw: opts[:raw])
           end
         end
@@ -160,7 +160,7 @@ module TMDB
               page: opts[:page],
               language: opts[:language]
             }
-            body = g[:client].get("/tv/top_rated", params)
+            body = g[:client].get("tv/top_rated", params)
             TMDB::Output.emit(body, raw: opts[:raw])
           end
         end
@@ -177,7 +177,7 @@ module TMDB
               page: opts[:page],
               language: opts[:language]
             }
-            body = g[:client].get("/tv/on_the_air", params)
+            body = g[:client].get("tv/on_the_air", params)
             TMDB::Output.emit(body, raw: opts[:raw])
           end
         end
@@ -194,7 +194,7 @@ module TMDB
               page: opts[:page],
               language: opts[:language]
             }
-            body = g[:client].get("/tv/airing_today", params)
+            body = g[:client].get("tv/airing_today", params)
             TMDB::Output.emit(body, raw: opts[:raw])
           end
         end

@@ -49,6 +49,9 @@ The TMDB CLI requires an API key from The Movie Database.
 2. Go to Settings → API
 3. Request an API key (free for personal use)
 
+**Note:** This CLI uses the API key authentication method (not the Bearer token/access
+token method). Use your **API key (v3 auth)**, not the “Read Access Token”.
+
 **Set your API key:**
 
 ```bash
@@ -76,7 +79,7 @@ tmdb movie details --id=603
 tmdb search tv --query="Breaking Bad"
 
 # Get trending movies this week
-tmdb trending movie week
+tmdb trending --media-type=movie --time-window=week
 
 # Discover highly-rated sci-fi movies from 2020
 tmdb discover movie --with-genres=878 --year=2020 --sort-by=vote_average.desc
@@ -212,16 +215,25 @@ tmdb search movie --query="Inception" --raw
 
 | Command | Description |
 | --- | --- |
-| `trending <media_type> <time_window>` | Get trending items |
+| `trending` | Get trending items (movies, TV shows, people) |
 
-**Media types:** `all`, `movie`, `tv`, `person`\
-**Time windows:** `day`, `week`
+**Flags:**
+- `--media-type` - Media type: `all`, `movie`, `tv`, `person` (default: `all`)
+- `--time-window` - Time window: `day`, `week` (default: `week`)
 
 Examples:
 ```bash
-tmdb trending movie week
-tmdb trending tv day
-tmdb trending all week
+# Get trending movies this week (default)
+tmdb trending
+
+# Get trending movies today
+tmdb trending --media-type=movie --time-window=day
+
+# Get trending TV shows this week
+tmdb trending --media-type=tv --time-window=week
+
+# Get all trending items (movies, TV, people) this week
+tmdb trending --media-type=all
 ```
 
 ### Schema Introspection
