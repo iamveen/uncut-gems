@@ -1,0 +1,19 @@
+---
+name: nested
+description: Template with nested data
+schema:
+  type: object
+  properties:
+    movie:
+      type: object
+      properties:
+        title:
+          type: string
+        year:
+          type: integer
+      required:
+        - title
+  required:
+    - movie
+---
+<%= movie["title"] %> (<%= movie["year"] %>)

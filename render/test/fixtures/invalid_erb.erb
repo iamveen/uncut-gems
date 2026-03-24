@@ -1,0 +1,15 @@
+---
+name: broken-erb
+description: Template with invalid ERB syntax
+schema:
+  type: object
+  properties:
+    title:
+      type: string
+  required:
+    - title
+---
+Title: <%= title %>
+<% if %>
+This if has no condition
+<% end %>

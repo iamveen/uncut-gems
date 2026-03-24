@@ -1,0 +1,10 @@
+---
+name: bad-schema
+description: Template with an invalid JSON Schema
+schema:
+  type: not-a-valid-type
+  properties:
+    title:
+      type: also-invalid
+---
+<%= title %>

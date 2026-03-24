@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+lib_path = File.expand_path("../lib", __dir__)
+$LOAD_PATH.unshift(lib_path) unless $LOAD_PATH.include?(lib_path)
+
+require "gli"
+require "render"
+
+include GLI::App
+
+program_desc "CLI template engine for transforming JSON into formatted output"
+version Render::VERSION
+
+subcommand_option_handling :normal
+arguments :strict
+
+on_error do |e|
+  raise e if e.is_a?(SystemExit)
+
+  $stderr.puts "Error: #{e.message}"
+  false
+end
+
+Render::Commands.register_apply(self)
+Render::Commands.register_schema(self)
+Render::Commands.register_validate(self)
+Render::Commands.register_check(self)
+Render::Commands.register_help(self)
+
+exit run(ARGV)

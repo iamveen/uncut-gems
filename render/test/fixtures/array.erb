@@ -1,0 +1,21 @@
+---
+name: array
+description: Template with array of items
+schema:
+  type: object
+  properties:
+    items:
+      type: array
+      items:
+        type: object
+        properties:
+          name:
+            type: string
+        required:
+          - name
+  required:
+    - items
+---
+<% items.each do |item| %>
+- <%= item["name"] %>
+<% end %>
